@@ -72,10 +72,12 @@ const getUserTodos = async (req: Request, res: Response) => {
             return;
         }
         const sort = req.query.sort as string | undefined;
+        const isCompleted = req.query.completed as string | undefined;
 
         const validSortColumns = ['dueDate'];
         const validSortDirections = ['asc', 'desc'];
 
+        const whereQuery: { userId: number; completed?: boolean } = { userId: id };
         const orderArr: [string, string][] = [];
 
         if (sort) {
@@ -95,8 +97,20 @@ const getUserTodos = async (req: Request, res: Response) => {
             orderArr.push(['id', 'asc']);
         }
 
+        if (isCompleted) {
+            if (isCompleted === 'true') {
+                whereQuery['completed'] = true; // Filter for completed todos
+            } else if (isCompleted === 'false') {
+                whereQuery['completed'] = false; // Filter for incomplete todos
+            }
+            else{
+                res.status(400).json({ message: 'Invalid completed status format' });
+                return;
+            }
+        }
+
         const todos = await TODO.findAll({
-            where: { userId: id },
+            where: whereQuery,
             order: orderArr,
             attributes: { exclude: ['userId', 'createdAt', 'updatedAt'] },
         });
