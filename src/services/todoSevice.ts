@@ -73,6 +73,8 @@ const getUserTodos = async (req: Request, res: Response) => {
         }
         const sort = req.query.sort as string | undefined;
         const isCompleted = req.query.completed as string | undefined;
+        const page = req.query.page as string|undefined || 1 ;
+        const pageSize = req.query.limit as string|undefined || 2;
 
         const validSortColumns = ['dueDate'];
         const validSortDirections = ['asc', 'desc'];
@@ -112,7 +114,10 @@ const getUserTodos = async (req: Request, res: Response) => {
         const todos = await TODO.findAll({
             where: whereQuery,
             order: orderArr,
+            limit: parseInt(pageSize as string) ,
+            offset: (parseInt(page as string) - 1) * parseInt(pageSize as string),
             attributes: { exclude: ['userId', 'createdAt', 'updatedAt'] },
+            
         });
 
         if (!todos || todos.length === 0) {
