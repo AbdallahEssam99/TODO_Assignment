@@ -11,8 +11,9 @@ const port = 3000;
 const address = `http://localhost:${port}`;
 
 
-userRouter(app);
-todoRouter(app);
+
+app.use('/api/v1/todos',todoRouter);
+app.use('/api/v1/users',userRouter);
 
 app.get('/', (req, res) => {
     res.send('Welcome to the API!' );
