@@ -4,8 +4,6 @@ import TODO from './todoModel'
 
 class User extends Model {
     password: any;
-    // password: any; 
-    // Model methods
 };
 
 User.init({
@@ -32,17 +30,17 @@ User.init({
         },
     },
     password: {
-        type: DataTypes.STRING(100),
+        type: DataTypes.STRING(72),
         allowNull: false,
-        validate: {
-            len: [8, 255],
-            isValidPassword(value:string) {
-                const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
-                if (!regex.test(value)) {
-                    throw new Error('Password must be at least 8 characters long and include both letters and numbers.');
-                }
-            },
-        },
+        // validate: {
+        //     len: [8, 255],
+        //     isValidPassword(value:string) {
+        //         const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+        //         if (!regex.test(value)) {
+        //             throw new Error('Password must be at least 8 characters long and include both letters and numbers.');
+        //         }
+        //     },
+        // },
     },
     dateOfBirth: {
         type: DataTypes.DATEONLY,
