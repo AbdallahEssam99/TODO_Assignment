@@ -65,30 +65,53 @@ const deleteTodo = async(req:Request,res:Response) => {
 }
 
 const getUserTodos = async (req: Request, res: Response) => {
-    try {
-        const userId = req.params.userId;
-        const { sortBy = 'id', order = 'asc' } = req.query;
+    try{
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            res.status(400).json({ message: 'Invalid user ID format' });
+            return;
+        }
+        const sort = req.query.sort as string | undefined;
 
-        // Validate `order` and fallback to default if invalid
-        const validOrder = order === 'asc' || order === 'desc' ? order : 'asc';
+        const validSortColumns = ['dueDate'];
+        const validSortDirections = ['asc', 'desc'];
 
-        // Validate `sortBy` against allowed columns to prevent SQL injection
-        const allowedSortBy = ['id', 'title', 'dueDate', 'completed'];
-        const columnToSortBy = allowedSortBy.includes(sortBy as string) ? sortBy : 'id';
+        const orderArr: [string, string][] = [];
 
-        // Fetch todos with sorting
-        const userTodos = await TODO.findAll({
-            where: { userId },
-            attributes: {
-                exclude: ['userId', 'createdAt', 'updatedAt'],
-            },
-            order: [[columnToSortBy, validOrder]], // Dynamic sorting
+        if (sort) {
+            const sortFields = sort.split(',');
+
+            for (const field of sortFields) {
+                const [column, direction] = field.split(':');
+                // Validate column and direction
+                if (column && direction && validSortColumns.includes(column) && validSortDirections.includes(direction?.toLowerCase())) {
+                    orderArr.push([column, direction]);
+                }
+            }
+        }
+
+        // Add default sorting if no valid columns were provided
+        if (orderArr.length === 0) {
+            orderArr.push(['id', 'asc']);
+        }
+
+        const todos = await TODO.findAll({
+            where: { userId: id },
+            order: orderArr,
+            attributes: { exclude: ['userId', 'createdAt', 'updatedAt'] },
         });
 
-        res.status(200).json(userTodos);
-    } catch (err) {
+        if (!todos || todos.length === 0) {
+            res.status(404).json({ message: 'No todos found for the user' });
+            return;
+        }
+
+        res.status(200).json(todos);
+    
+    }catch(err){
         throw new Error(`${err}`);
     }
+    
 };
 
 
